@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const circleColors = ["red", "green", "blue", "yellow"];
+        const circleRadius = 30;
+        const circleSpacing = 80;
+        const arrowWidth = 20;
+        const arrowHeight = 10;
+
+        const circles = [];
+        const arrows = [];
+        let selectedCircle = -1;
+
+        // Create circles and arrows
+        for (let i = 0; i < circleColors.length; i++) {
+            const circleX = circleSpacing;
+            const circleY = (i + 1) * circleSpacing;
+            circles.push({ x: circleX, y: circleY });
+
+            const arrowX = canvas.width - circleSpacing;
+            const arrowY = circleY + (circleRadius - arrowHeight / 2);
+            arrows.push({ x: arrowX, y: arrowY });
+        }
+
+        // Event listener for mouse click
+        canvas.addEventListener("click", handleCanvasClick);
+
+        // Event handler for canvas click
+        function handleCanvasClick(event) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            // Check if a circle is clicked
+            for (let i = 0; i < circles.length; i++) {
+                const circle = circles[i];
+                if (isPointInCircle(mouseX, mouseY, circle.x, circle.y)) {
+                    selectedCircle = i;
+                    moveArrowTowardsCircle(selectedCircle);
+                    break;
+                }
+            }
+        }
+
+        // Function to check if a point is inside a circle
+        function isPointInCircle(x, y, circleX, circleY) {
+            const distance = Math.sqrt((x - circleX) ** 2 + (y - circleY) ** 2);
+            return distance <= circleRadius;
+        }
+
+        // Function to move arrow towards the circle
+        function moveArrowTowardsCircle(circleIndex) {
+            const arrow = arrows[circleIndex];
+            const circle = circles[circleIndex];
+
+            const animate = setInterval(() => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw circles
+                for (let i = 0; i < circles.length; i++) {
+                    const circle = circles[i];
+                    ctx.fillStyle = circleColors[i];
+                    ctx.beginPath();
+                    ctx.arc(circle.x, circle.y, circleRadius, 0, Math.PI * 2);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Draw arrows
+                for (let i = 0; i < arrows.length; i++) {
+                    const arrow = arrows[i];
+                    ctx.fillStyle = "black";
+                    ctx.beginPath();
+                    ctx.moveTo(arrow.x, arrow.y);
+                    ctx.lineTo(circle.x, circle.y);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Draw moving arrow
+                ctx.fillStyle = "black";
+                ctx.beginPath();
+                ctx.moveTo(arrow.x, arrow.y);
+                ctx.lineTo(circle.x, circle.y);
+                ctx.closePath();
+                ctx.fill();
+
+                // Update arrow position
+                if (arrow.x < circle.x) {
+                    arrow.x += 1;
+                } else if (arrow.x > circle.x) {
+                    arrow.x -= 1;
+                }
+
+                if (arrow.y < circle.y){
+                    arrow.y += 1;
+                                } else if (arrow.y > circle.y) {
+                    arrow.y -= 1;
+                }
+
+                // Check if arrow reached the circle
+                if (arrow.x === circle.x && arrow.y === circle.y) {
+                    clearInterval(animate);
+                    changeCircleColor(circleIndex);
+                }
+            }, 10);
+        }
+
+        // Function to change circle color
+        function changeCircleColor(circleIndex) {
+            const circle = circles[circleIndex];
+            circle.color = "orange";
+
+            // Redraw circles
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < circles.length; i++) {
+                const circle = circles[i];
+                ctx.fillStyle = circle.color || circleColors[i];
+                ctx.beginPath();
+                ctx.arc(circle.x, circle.y, circleRadius, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        // Initial drawing of circles and arrows
+        for (let i = 0; i < circles.length; i++) {
+            const circle = circles[i];
+            ctx.fillStyle = circleColors[i];
+            ctx.beginPath();
+            ctx.arc(circle.x, circle.y, circleRadius, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fill();
+
+            const arrow = arrows[i];
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.moveTo(arrow.x, arrow.y);
+            ctx.lineTo(circle.x, circle.y);
+            ctx.closePath();
+            ctx.fill();
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Circle Arrows Animation</title>
+    <style>
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="600" height="400"></canvas>
+
+    <script>
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+
+        // Circle positions
+        var circlePositions = [
+            { x: 100, y: 100 },
+            { x: 100, y: 200 },
+            { x: 100, y: 300 },
+            { x: 100, y: 400 }
+        ];
+
+        // Arrow positions
+        var arrowPositions = [
+            { x: 500, y: 100 },
+            { x: 500, y: 200 },
+            { x: 500, y: 300 },
+            { x: 500, y: 400 }
+        ];
+
+        // Circle colors
+        var circleColors = ["red", "green", "blue", "yellow"];
+
+        // Arrow properties
+        var arrowWidth = 10;
+        var arrowHeight = 20;
+
+        // Track selected circle
+        var selectedCircle = -1;
+
+        // Event listener for mouse click
+        canvas.addEventListener("click", function (e) {
+            var rect = canvas.getBoundingClientRect();
+            var mouseX = e.clientX - rect.left;
+            var mouseY = e.clientY - rect.top;
+
+            // Check if a circle is clicked
+            for (var i = 0; i < circlePositions.length; i++) {
+                var circleX = circlePositions[i].x;
+                var circleY = circlePositions[i].y;
+
+                if (mouseX >= circleX && mouseX <= circleX + 50 && mouseY >= circleY && mouseY <= circleY + 50) {
+                    selectedCircle = i;
+                    break;
+                }
+            }
+
+            // Start animation for selected circle
+            if (selectedCircle !== -1) {
+                animateArrow();
+            }
+        });
+
+        // Animation function for arrow movement
+        function animateArrow() {
+            var startX = arrowPositions[selectedCircle].x;
+            var startY = arrowPositions[selectedCircle].y;
+            var endX = circlePositions[selectedCircle].x + 25;
+            var endY = circlePositions[selectedCircle].y + 25;
+
+            var currentX = startX;
+            var currentY = startY;
+
+            var animate = setInterval(function () {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw circles
+                for (var i = 0; i < circlePositions.length; i++) {
+                    var circleX = circlePositions[i].x;
+                    var circleY = circlePositions[i].y;
+                    var color = i === selectedCircle ? "gray" : circleColors[i];
+
+                    ctx.beginPath();
+                    ctx.arc(circleX, circleY, 25, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    ctx.closePath();
+                }
+
+                // Draw arrows
+                for (var j = 0; j < arrowPositions.length; j++) {
+                    var arrowX = arrowPositions[j].x;
+                    var arrowY = arrowPositions[j].y;
+                    var arrowColor = j === selectedCircle ? "gray" : "black";
+
+                    ctx.fillStyle = arrowColor;
+                    ctx.beginPath();
+                    ctx.moveTo(arrowX, arrowY);
+                    ctx.lineTo(arrowX + arrowWidth, arrowY + arrowHeight / 2);
+                    //ctx.lineTo(arrowX, arrowY
+                    ctx.lineTo(arrowX, arrowY + arrowHeight);
+                    ctx.lineTo(arrowX, arrowY);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Draw moving arrow
+                ctx.fillStyle = "black";
+                ctx.beginPath();
+                ctx.moveTo(currentX, currentY);
+                ctx.lineTo(currentX + arrowWidth, currentY + arrowHeight / 2);
+                ctx.lineTo(currentX, currentY + arrowHeight);
+                ctx.lineTo(currentX, currentY);
+                ctx.closePath();
+                ctx.fill();
+
+                // Update arrow position
+                if (currentX < endX) {
+                    currentX += 1;
+                } else if (currentX > endX) {
+                    currentX -= 1;
+                }
+
+                if (currentY < endY) {
+                    currentY += 1;
+                } else if (currentY > endY) {
+                    currentY -= 1;
+                }
+
+                // Check if arrow reached the circle
+                if (currentX === endX && currentY === endY) {
+                    clearInterval(animate);
+                    circleColors[selectedCircle] = "gray";
+                    selectedCircle = -1;
+                }
+            }, 10);
+        }
+    </script>
+</body>
+
+</html>

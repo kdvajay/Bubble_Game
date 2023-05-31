@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Canvas App</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="600" height="400"></canvas>
+
+    <script>
+        // Module 1
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const circleColors = ['red', 'green', 'blue', 'yellow'];
+        const circleRadius = 30;
+        const circleYPositions = [100, 200, 300, 400];
+
+        // Draw circles
+        for (let i = 0; i < circleColors.length; i++) {
+            const circleX = 100;
+            const circleY = circleYPositions[i];
+
+            ctx.fillStyle = circleColors[i];
+            ctx.beginPath();
+            ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Module 2
+        let selectedCircle = null;
+        const arrowSize = 10;
+        const arrowSpeed = 1;
+        const circleHitColor = 'orange';
+
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const clickY = event.clientY - rect.top;
+
+            for (let i = 0; i < circleColors.length; i++) {
+                const circleX = 100;
+                const circleY = circleYPositions[i];
+
+                if (clickX >= circleX - circleRadius && clickX <= circleX + circleRadius &&
+                    clickY >= circleY - circleRadius && clickY <= circleY + circleRadius) {
+                    selectedCircle = i;
+                    break;
+                }
+            }
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw circles
+            for (let i = 0; i < circleColors.length; i++) {
+                const circleX = 100;
+                const circleY = circleYPositions[i];
+
+                if (selectedCircle === i) {
+                    ctx.fillStyle = circleHitColor;
+                } else {
+                    ctx.fillStyle = circleColors[i];
+                }
+
+                ctx.beginPath();
+                ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Draw arrows
+            for (let i = 0; i < circleColors.length; i++) {
+                const circleX = 100;
+                const circleY = circleYPositions[i];
+
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.moveTo(canvas.width - 100, circleY);
+                ctx.lineTo(canvas.width - 100 - arrowSize, circleY - arrowSize / 2);
+                ctx.lineTo(canvas.width - 100 - arrowSize, circleY + arrowSize / 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Move arrow towards the selected circle
+            if (selectedCircle !== null) {
+                const circleX = 100;
+                const circleY = circleYPositions[selectedCircle];
+
+                const arrowX = canvas.width - 100 - arrowSize;
+                const arrowY = circleY;
+
+                if (arrowX > circleX) {
+                    ctx.fillStyle = 'black';
+                    ctx.beginPath();
+                    ctx.moveTo(arrowX, arrowY);
+                    ctx.lineTo(arrowX - arrowSpeed, arrowY);
+                    ctx.closePath();
+                    ctx.stroke();
+                } else
+                {
+ctx.fillStyle = 'black';
+ctx.beginPath();
+ctx.moveTo(arrowX, arrowY);
+ctx.lineTo(circleX - circleRadius, circleY);
+ctx.closePath();
+ctx.stroke();                if (Math.abs(arrowX - (circleX - circleRadius)) < arrowSpeed) {
+                    selectedCircle = null;
+                    ctx.fillStyle = circleHitColor;
+                    ctx.beginPath();
+                    ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>

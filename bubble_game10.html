@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="600" height="500"></canvas>
+    <button id="speedButton">Change Speed</button>
+    <button id="resetButton">Reset</button>
+
+    <script>
+        // Module 1
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const circleColors = ['purple', 'teal', 'orange', 'pink'];
+        const arrowColor = 'red';
+        const circleHitColor = 'gray';
+        const circleRadius = 40;
+        const arrowWidth = 25;
+        const arrowHeight = 12;
+        let arrowSpeed = 3; // Initial arrow speed
+
+        let circles = [];
+        let arrows = [];
+
+        canvas.addEventListener('click', handleClick);
+        document.getElementById('speedButton').addEventListener('click', changeArrowSpeed);
+        document.getElementById('resetButton').addEventListener('click', reset);
+
+        function init() {
+            for (let i = 0; i < circleColors.length; i++) {
+                const x = 100;
+                const y = 100 + i * 100;
+                circles.push({ x, y, color: circleColors[i], hit: false });
+                arrows.push({ x: canvas.width - 50, y: y - arrowHeight / 2, moving: false });
+            }
+        }
+
+        function drawCircle(x, y, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, circleRadius, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawArrow(x, y) {
+            ctx.fillStyle = arrowColor;
+            ctx.beginPath();
+            ctx.moveTo(x - arrowWidth, y);
+            ctx.lineTo(x, y - arrowHeight / 2);
+            ctx.lineTo(x, y + arrowHeight / 2);
+            ctx.closePath();
+            ctx.fill();
+        }
+        // Module 2
+        function handleClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            for (let i = 0; i < circles.length; i++) {
+                const circle = circles[i];
+                if (x >= circle.x - circleRadius && x <= circle.x + circleRadius && y >= circle.y - circleRadius && y <= circle.y + circleRadius) {
+                    const arrow = arrows[i];
+                    if (!arrow.moving) {
+                        arrow.moving = true;
+                        animateArrow(arrow, circle);
+                    }
+                    break;
+                }
+            }
+        }
+
+        function animateArrow(arrow, circle) {
+            const targetX = circle.x;
+            const direction = targetX > arrow.x ? 1 : -1;
+
+            function animate() {
+                ctx.clearRect(arrow.x - arrowWidth, arrow.y - arrowHeight / 2, arrowWidth, arrowHeight);
+
+                arrow.x += direction * arrowSpeed;
+
+                const distanceToTarget = Math.abs(arrow.x - targetX);
+                const distanceThreshold = circleRadius + arrowWidth / 2;
+
+                if (distanceToTarget <= distanceThreshold) {
+                    arrow.moving = false;
+                    circle.hit = true;
+                    drawCircle(circle.x, circle.y, circleHitColor);
+                    return;
+                }
+
+                drawArrow(arrow.x, arrow.y);
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        function changeArrowSpeed() {
+             arrowSpeed = arrowSpeed === 3 ? 6 : 3; // Toggle arrow speed between 3 and 6
+
+            // Update arrow speed for all moving arrows
+            for (let i = 0; i < arrows.length; i++) {
+                const arrow = arrows[i];
+                if (arrow.moving) {
+                    const targetX = circles[i].x;
+                    const direction = targetX > arrow.x ? 1 : -1;
+                    arrow.x = arrow.x + direction * (arrowSpeed - 3) * arrowWidth; // Adjust arrow position based on new speed
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < circles.length; i++) {
+                const circle = circles[i];
+                drawCircle(circle.x, circle.y, circle.hit ? circleHitColor : circle.color);
+            }
+
+            for (let i = 0; i < arrows.length; i++) {
+                const arrow = arrows[i];
+                drawArrow(arrow.x, arrow.y);
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        function reset() {
+            circles = [];
+            arrows = [];
+            init();
+        }
+
+        init();
+        draw();
+    </script>
+</body>
+</html>
